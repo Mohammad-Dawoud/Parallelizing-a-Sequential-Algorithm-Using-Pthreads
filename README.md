@@ -1,1 +1,0 @@
-# Parallelizing-a-Sequential-Algorithm-Using-Pthreads
