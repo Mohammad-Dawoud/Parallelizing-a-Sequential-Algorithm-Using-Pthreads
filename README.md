@@ -1,140 +1,117 @@
-# Parallelizing a Sequential Algorithm Using Pthreads
-
-A C++ implementation of image filtering with both serial and parallel (pthreads) versions, designed to compare their performance on different hardware configurations.
-
-## Table of Contents
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Filters](#filters)
-- [Performance](#performance)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
+# Parallel Algorithm Implementation: OpenMP vs Pthreads
 
 ## Project Overview
+This project demonstrates the parallelization of an image filtering algorithm using two different parallel programming approaches: OpenMP and POSIX Threads (Pthreads). The goal is to compare the performance characteristics of these two parallelization methods when applied to image processing tasks.
 
-This project implements image filtering algorithms in both serial and parallel fashions. It serves as a practical example of how multi-threading can be used to speed up image processing tasks. The implementation includes:
+## Problem Statement
+The project implements a parallel version of an image filtering algorithm that processes input images based on specific criteria. The implementation includes:
+- A sequential version (baseline)
+- An OpenMP parallel version
+- A Pthreads parallel version
 
-- A serial version for baseline performance
-- A parallel version using POSIX threads (pthreads)
-- Multiple filter kernels for different image processing effects
-- Performance measurement and comparison capabilities
-
-## Features
-
-- **Dual Implementations**: Both serial and parallel versions for performance comparison
-- **Multiple Filter Types**: Includes blur and edge detection filters
-- **Scalable**: Can process images of various sizes
-- **Performance Metrics**: Measures and reports execution time
-- **Flexible**: Supports both grayscale and color images
-- **Adjustable**: Optional image scaling for performance testing
-
-## Requirements
-
-- C++11 or later
-- OpenCV (tested with version 4.5.0+)
-- POSIX Threads (pthreads) for the parallel version
-- CMake (for building)
-- Make
-
-## Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Mohammad-Dawoud/Parallelizing-a-Sequential-Algorithm-Using-Pthreads.git
-   cd Parallelizing-a-Sequential-Algorithm-Using-Pthreads/Source
-   ```
-
-2. Build the project:
-   ```bash
-   make
-   ```
-
-   This will compile both the serial (`apply_filter`) and parallel (`papply_filter`) executables.
-
-## Usage
-
-### Serial Version
-```bash
-./apply_filter <input_image> <mask_file> <output_image> [scale_factor]
-```
-
-### Parallel Version
-```bash
-./papply_filter <input_image> <mask_file> <output_image> <num_threads> [scale_factor]
-```
-
-#### Parameters:
-- `input_image`: Path to the input image file
-- `mask_file`: Path to the filter mask file (see Filters section)
-- `output_image`: Path where the processed image will be saved
-- `num_threads`: Number of threads to use (parallel version only)
-- `scale_factor`: (Optional) Scale factor for the input image (e.g., 0.5 for half size)
-
-### Example
-```bash
-# Apply blur filter using 4 threads
-./papply_filter input.jpg Filters/Blur_Mask_1.txt output_blur.jpg 4
-
-# Apply edge detection with image scaling
-./papply_filter input.jpg Filters/Edge_Mask.txt output_edge.jpg 4 0.75
-```
-
-## Filters
-
-The project includes several predefined filters in the `Filters/` directory:
-
-- **Blur Masks**:
-  - `Blur_Mask_1.txt`: Simple 3x3 Gaussian blur
-  - `Blur_Mask_Sig16.txt`: Larger Gaussian blur with sigma=16
-  
-- **Edge Detection**:
-  - `Edge_Mask.txt`: Basic edge detection
-  - `Edge_Mask_2.txt`: Alternative edge detection kernel
-
-You can create custom filters by creating a text file with 3x3 matrix values.
-
-## Performance
-
-The parallel implementation uses a row-based partitioning strategy where each thread processes a subset of the image rows. The performance gain depends on:
-
-- Number of available CPU cores
-- Image size
-- Filter complexity
-- System load
-
-To compare performance:
-
-```bash
-# Run serial version
-time ./apply_filter input.jpg Filters/Blur_Mask_1.txt output_serial.jpg
-
-# Run parallel version with 4 threads
-time ./papply_filter input.jpg Filters/Blur_Mask_1.txt output_parallel.jpg 4
-```
+## Parallelization with OpenMP
+The OpenMP implementation uses the following parallelization approach:
+- Utilizes OpenMP's high-level parallel for pragmas to distribute loop iterations across available threads
+- Implements dynamic scheduling to handle load balancing for different image regions
+- Uses thread-local variables to minimize false sharing
+- Employs OpenMP's reduction operations for efficient result combination
 
 ## Project Structure
-
 ```
-Parallelizing-a-Sequential-Algorithm-Using-Pthreads/
-├── Source/
-│   ├── Filters/           # Filter mask files
-│   ├── Images/            # Sample images 
-│   ├── Output/            # Directory for processed images
-│   ├── sequential_filter_apply.cpp   # Serial implementation
-│   ├── parallel_filter_apply.cpp  # Parallel implementation
-│   └── Makefile          # Build configuration
-└── README.md             # This file
+Parallel_HW2/
+├── src/
+│   ├── sequential_filter_apply.cpp   # Sequential implementation
+│   ├── parallel_filter_openmp.cpp    # OpenMP parallel implementation
+│   ├── parallel_filter_pthreads.cpp  # Pthreads implementation
+│   └── Makefile                      # Build configuration
+└── README.md                         # This file
 ```
 
-## Contributing
+## Building and Running
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Dependencies
+- C++11, OpenMP, Pthreads, OpenCV, GNU Make
 
+### Build Commands
+```bash
+make all              # Build all versions
+make clean            # Clean build files
+make test             # Run tests with sample images
+```
 
----
+This will generate the following executables:
+- `sequential_filter`
+- `parallel_filter_openmp`
+- `parallel_filter_pthreads`
 
-Created by Mohammad Dawood - 2025
+## Compilation and Execution
+### Dependencies
+- C++11 or later
+- OpenMP (for the OpenMP implementation)
+- Pthreads (usually comes with the system)
+- OpenCV (for image processing)
+- GNU Make
+
+### Compiling with OpenMP
+```bash
+g++ -o parallel_filter_openmp parallel_filter_openmp.cpp -fopenmp `pkg-config --cflags --libs opencv4` -O3
+```
+
+### Running the OpenMP Version
+```bash
+OMP_NUM_THREADS=<num_threads> ./parallel_filter_openmp <input_image> <output_image> <filter_parameter>
+```
+Example:
+```bash
+OMP_NUM_THREADS=8 ./parallel_filter_openmp input.jpg output.jpg 0.5
+```
+
+## Performance Analysis
+
+### Test Environment
+- **CPU**: Intel Core i7-10750H @ 2.60 GHz (6 cores, 12 threads)
+- **RAM**: 16 GB DDR4-2933 MT/s
+- **OS**: Ubuntu 24.04.2 LTS
+
+### Test Images
+| Size   | Resolution | Pixels   |
+|--------|------------|----------|
+| Small  | 696×1000   | ~0.7 MP  |
+| Medium | 5184×3054  | ~16 MP   |
+| Large  | 14575×8441 | ~123 MP  |
+
+### Performance Results
+
+#### Execution Time (seconds)
+| Image Size | Sequential | OpenMP (8 threads) | Pthreads (8 threads) |
+|------------|------------|--------------------|----------------------|
+| Small      | 0.04721s   | 0.004539s          | 0.020637s            |
+| Medium     | 1.08756s   | 0.055615s          | 0.213523s            |
+| Large      | 10.22s     | 0.594062s          | 2.01654s             |
+
+#### Speedup Over Sequential
+| Implementation       | Speedup (x) |
+|----------------------|-------------|
+| OpenMP (8 threads)   | 10.4x       |
+| Pthreads (8 threads) | 2.4x        |
+
+### Observations
+1. **Performance Comparison**: The OpenMP implementation shows significantly better performance compared to both sequential and Pthreads implementations.
+2. **OpenMP Efficiency**: With 8 threads, OpenMP achieves a ~10.4x speedup over the sequential version, indicating excellent parallel scaling.
+3. **Pthreads Performance**: The Pthreads implementation shows a ~2.4x speedup, which is good but notably less than OpenMP's performance.
+4. **Implementation Differences**: The performance gap between OpenMP and Pthreads suggests potential optimizations in the OpenMP implementation or overhead in the Pthreads version that could be investigated further.
+### Challenges and Solutions
+1. **Load Balancing**: 
+   - *Challenge*: Uneven work distribution in image processing loops
+   - *Solution*: Implemented dynamic scheduling with an appropriate chunk size
+
+2. **False Sharing**:
+   - *Challenge*: Performance degradation due to cache line sharing
+   - *Solution*: Used thread-local storage and padding to minimize false sharing
+
+3. **Memory Access Patterns**:
+   - *Challenge*: Inefficient memory access in nested loops
+   - *Solution*: Optimized loop ordering and memory access patterns for better cache utilization
+
+## Author
+[Made by Mohammad Dawoud 2025]
