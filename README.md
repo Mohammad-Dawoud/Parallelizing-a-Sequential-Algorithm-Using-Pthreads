@@ -20,6 +20,9 @@ The OpenMP implementation uses the following parallelization approach:
 ```
 Parallel_HW2/
 ├── src/
+│   ├── Filters/                      # Filter mask files
+│   ├── Images/                       # Sample images 
+│   ├── Output/                       # Directory for processed images
 │   ├── sequential_filter_apply.cpp   # Sequential implementation
 │   ├── parallel_filter_openmp.cpp    # OpenMP parallel implementation
 │   ├── parallel_filter_pthreads.cpp  # Pthreads implementation
